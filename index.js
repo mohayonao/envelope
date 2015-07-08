@@ -66,6 +66,15 @@ Envelope.asr = function(attackTime, sustainTime, releaseTime, totalLevel) {
   ]);
 };
 
+Envelope.cutoff = function(releaseTime, totalLevel) {
+  totalLevel = defaults(totalLevel, 1);
+
+  return new Envelope([
+    [ 0, totalLevel ],
+    [ releaseTime, 0 ],
+  ]);
+};
+
 Envelope.prototype.valueAt = function(time) {
   var params = this[COMPUTED_PARAMS];
   var fromIndex, index, x0, x1;
