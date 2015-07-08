@@ -22,7 +22,7 @@ describe("Envelope", function() {
       });
     });
   });
-  describe(".adssr(attackTime: number, decayTime: number, sustainLevel: number, sustainTime: number, releaseTime: number)", function() {
+  describe(".adssr(attackTime: number, decayTime: number, sustainLevel: number, sustainTime: number, releaseTime: number, totalLevel: number = 1)", function() {
     it("works", function() {
       var env = Envelope.adssr(0.5, 0.2, 0.4, 1.0, 0.4);
 
@@ -31,8 +31,18 @@ describe("Envelope", function() {
         [ 0, 0 ], [ 0.5, 1 ], [ 0.2, 0.4 ], [ 1.0, 0.4 ], [ 0.4, 0 ],
       ]);
     });
+    it("works with totalLevel", function() {
+      it("works", function() {
+        var env = Envelope.adssr(0.5, 0.2, 0.4, 1.0, 0.4, 0.5);
+
+        assert(env instanceof Envelope);
+        assert.deepEqual(env.params, [
+          [ 0, 0 ], [ 0.5, 0.5 ], [ 0.2, 0.2 ], [ 1.0, 0.2 ], [ 0.4, 0 ],
+        ]);
+      });
+    });
   });
-  describe(".ads(attackTime: number, decayTime: number, sustainLevel: number)", function() {
+  describe(".ads(attackTime: number, decayTime: number, sustainLevel: number, totalLevel = 1)", function() {
     it("works", function() {
       var env = Envelope.ads(0.5, 0.2, 0.4);
 
@@ -41,13 +51,68 @@ describe("Envelope", function() {
         [ 0, 0 ], [ 0.5, 1 ], [ 0.2, 0.4 ],
       ]);
     });
+    it("works with totalLevel", function() {
+      var env = Envelope.ads(0.5, 0.2, 0.4, 0.5);
+
+      assert(env instanceof Envelope);
+      assert.deepEqual(env.params, [
+        [ 0, 0 ], [ 0.5, 0.5 ], [ 0.2, 0.2 ],
+      ]);
+    });
+  });
+  describe(".asr(attackTime: number, sustainTime: number, releaseTime: number, totalLevel: number = 1)", function() {
+    it("works", function() {
+      var env = Envelope.asr(0.5, 1.0, 0.4);
+
+      assert(env instanceof Envelope);
+      assert.deepEqual(env.params, [
+        [ 0, 0 ], [ 0.5, 1 ], [ 1.0, 1 ], [ 0.4, 0 ],
+      ]);
+    });
+    it("works with totalLevel", function() {
+      it("works", function() {
+        var env = Envelope.asr(0.5, 1.0, 0.4, 0.5);
+
+        assert(env instanceof Envelope);
+        assert.deepEqual(env.params, [
+          [ 0, 0 ], [ 0.5, 0.5 ], [ 1.0, 0.5 ], [ 0.4, 0 ],
+        ]);
+      });
+    });
+  });
+  describe(".cutoff(releaseTime: number, totalLevel: number = 1)", function() {
+    it("works", function() {
+      var env = Envelope.cutoff(0.4);
+
+      assert(env instanceof Envelope);
+      assert.deepEqual(env.params, [
+        [ 0, 1 ], [ 0.4, 0 ],
+      ]);
+    });
+    it("works with totalLevel", function() {
+      it("works", function() {
+        var env = Envelope.cutoff(0.4, 0.5);
+
+        assert(env instanceof Envelope);
+        assert.deepEqual(env.params, [
+          [ 0, 0.5 ], [ 0.4, 0 ],
+        ]);
+      });
+    });
   });
   describe("#params: [ number, number ][]", function() {
     it("works", function() {
-      var params = [];
+      var params = [
+        [ 0, 0 ], [ 0.5, 0.5 ], [ 1.0, 0.5 ], [ 0.4, 0 ],
+      ];
       var env = new Envelope(params);
 
-      assert(env.params === params);
+      assert(env.params !== params);
+      assert.deepEqual(env.params, params);
+
+      env.params[0][0] += 1;
+
+      assert.deepEqual(env.params, params);
     });
   });
   describe("#duration: number", function() {

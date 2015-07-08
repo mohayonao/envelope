@@ -13,13 +13,19 @@ Node.js
 npm install @mohayonao/envelope
 ```
 
+Browser
+
+- [envelope.js](https://github.com/mohayonao/envelope/blob/master/build/envelope.js)
+
 ## API
 ### Envelope
 - `constructor(params: [ time: number, value: number ][])`
 
 ### Class methods
-- `adssr(attackTime: number, decayTime: number, sustainLevel: number, sustainTime: number, releaseTime: number): Envelope`
-- `ads(attackTime: number, decayTime: number, sustainLevel: number): Envelope`
+- `adssr(attackTime, decayTime, sustainLevel, sustainTime, releaseTime, [totalLevel]): Envelope`
+- `ads(attackTime, decayTime, sustainLevel, [totalLevel]): Envelope`
+- `asr(attackTime, sustainTime, releaseTime, [totalLevel]): Envelope`
+- `cutoff(releaseTime, totalLevel = 1): Envelope`
 
 ### Instance attribute
 - `params: [ number, number ][]`
