@@ -1,0 +1,196 @@
+"use strict";
+
+var assert = require("power-assert");
+var sinon = require("sinon");
+var Envelope = require("../");
+
+function closeTo(expected, actual, delta) {
+  return Math.abs(expected - actual) <= delta;
+}
+
+describe("Envelope", function() {
+  describe("constructor(params: [ time: number, value: number ][])", function() {
+    it("works", function() {
+      var env = new Envelope([]);
+
+      assert(env instanceof Envelope);
+
+      assert.throws(function() {
+        return new Envelope([ 0, 0, 1, 1 ]);
+      }, function(e) {
+        return e instanceof TypeError && /the 1st argument must be/i.test(e.message);
+      });
+    });
+  });
+  describe(".adssr(attackTime: number, decayTime: number, sustainLevel: number, sustainTime: number, releaseTime: number)", function() {
+    it("works", function() {
+      var env = Envelope.adssr(0.5, 0.2, 0.4, 1.0, 0.4);
+
+      assert(env instanceof Envelope);
+      assert.deepEqual(env.params, [
+        [ 0, 0 ], [ 0.5, 1 ], [ 0.2, 0.4 ], [ 1.0, 0.4 ], [ 0.4, 0 ],
+      ]);
+    });
+  });
+  describe(".ads(attackTime: number, decayTime: number, sustainLevel: number)", function() {
+    it("works", function() {
+      var env = Envelope.ads(0.5, 0.2, 0.4);
+
+      assert(env instanceof Envelope);
+      assert.deepEqual(env.params, [
+        [ 0, 0 ], [ 0.5, 1 ], [ 0.2, 0.4 ],
+      ]);
+    });
+  });
+  describe("#params: [ number, number ][]", function() {
+    it("works", function() {
+      var params = [];
+      var env = new Envelope(params);
+
+      assert(env.params === params);
+    });
+  });
+  describe("#duration: number", function() {
+    it("works", function() {
+      var env1 = Envelope.adssr(0.5, 0.2, 0.4, 1.0, 0.4);
+      var env2 = Envelope.ads(0.5, 0.2, 0.4);
+
+      assert(env1.duration === 2.1);
+      assert(env2.duration === 0.7);
+    });
+  });
+  describe("#valueAt(time: number): number", function() {
+    describe("when empty envelope", function() {
+      it("works", function() {
+        var env0 = new Envelope([]);
+        var env1 = Envelope.adssr(0.5, 0.2, 0.4, 1.0, 0.4);
+
+        assert(env0.valueAt(-10) === 0);
+        assert(env0.valueAt(+10) === 0);
+
+        assert(closeTo(env1.valueAt(-10), 0.0, 1e-6));
+        // attack phase ( 0.0 -> 1.0 )
+        assert(closeTo(env1.valueAt(0.0), 0.0, 1e-6));
+        assert(closeTo(env1.valueAt(0.1), 0.2, 1e-6));
+        assert(closeTo(env1.valueAt(0.2), 0.4, 1e-6));
+        assert(closeTo(env1.valueAt(0.3), 0.6, 1e-6));
+        assert(closeTo(env1.valueAt(0.4), 0.8, 1e-6));
+        assert(closeTo(env1.valueAt(0.5), 1.0, 1e-6));
+        // decay phase ( 1.0 -> 0.4 )
+        assert(closeTo(env1.valueAt(0.6), 0.7, 1e-6));
+        assert(closeTo(env1.valueAt(0.7), 0.4, 1e-6));
+        // sustain phase ( 0.4 )
+        assert(closeTo(env1.valueAt(0.8), 0.4, 1e-6));
+        assert(closeTo(env1.valueAt(0.9), 0.4, 1e-6));
+        assert(closeTo(env1.valueAt(1.0), 0.4, 1e-6));
+        assert(closeTo(env1.valueAt(1.1), 0.4, 1e-6));
+        assert(closeTo(env1.valueAt(1.2), 0.4, 1e-6));
+        assert(closeTo(env1.valueAt(1.3), 0.4, 1e-6));
+        assert(closeTo(env1.valueAt(1.4), 0.4, 1e-6));
+        assert(closeTo(env1.valueAt(1.5), 0.4, 1e-6));
+        assert(closeTo(env1.valueAt(1.6), 0.4, 1e-6));
+        assert(closeTo(env1.valueAt(1.7), 0.4, 1e-6));
+        // release phase (0.4 -> 0.0 )
+        assert(closeTo(env1.valueAt(1.8), 0.3, 1e-6));
+        assert(closeTo(env1.valueAt(1.9), 0.2, 1e-6));
+        assert(closeTo(env1.valueAt(2.0), 0.1, 1e-6));
+        assert(closeTo(env1.valueAt(2.1), 0.0, 1e-6));
+        assert(closeTo(env1.valueAt(2.2), 0.0, 1e-6));
+        assert(closeTo(env1.valueAt(+10), 0.0, 1e-6));
+
+        // re search
+        assert(closeTo(env1.valueAt(0.5), 1.0, 1e-6));
+      });
+    });
+  });
+  describe("#applyTo(audioParam: AudioParam, playbackTime: number): self", function() {
+    it("works", function() {
+      var env1 = Envelope.adssr(0.5, 0.2, 0.4, 1.0, 0.4);
+      var audioParam = {
+        setValueAtTime: sinon.spy(),
+        linearRampToValueAtTime: sinon.spy(),
+      };
+      var env2 = env1.applyTo(audioParam, 10);
+
+      assert(env2 === env1);
+      assert(audioParam.setValueAtTime.callCount === 2);
+      assert(audioParam.setValueAtTime.args[0][0] === 0);
+      assert(audioParam.setValueAtTime.args[0][1] === 10);
+      assert(audioParam.linearRampToValueAtTime.callCount === 3);
+      assert(audioParam.linearRampToValueAtTime.args[0][0] === 1);
+      assert(audioParam.linearRampToValueAtTime.args[0][1] === 10 + 0.5);
+      assert(audioParam.linearRampToValueAtTime.args[1][0] === 0.4);
+      assert(audioParam.linearRampToValueAtTime.args[1][1] === 10 + 0.5 + 0.2);
+      assert(audioParam.setValueAtTime.args[1][0] === 0.4);
+      assert(audioParam.setValueAtTime.args[1][1] === 10 + 0.5 + 0.2 + 1.0);
+      assert(audioParam.linearRampToValueAtTime.args[2][0] === 0);
+      assert(audioParam.linearRampToValueAtTime.args[2][1] === 10 + 0.5 + 0.2 + 1.0 + 0.4);
+    });
+    it("works with negative playbackTime", function() {
+      var env1 = Envelope.adssr(0.5, 0.2, 0.4, 1.0, 0.4);
+      var audioParam = {
+        setValueAtTime: sinon.spy(),
+        linearRampToValueAtTime: sinon.spy(),
+      };
+      var env2 = env1.applyTo(audioParam, -0.6);
+
+      assert(env2 === env1);
+      assert(audioParam.setValueAtTime.callCount === 2);
+      assert(audioParam.setValueAtTime.args[0][0] === 0.7);
+      assert(audioParam.setValueAtTime.args[0][1] === 0);
+      assert(audioParam.linearRampToValueAtTime.callCount === 2);
+      assert(audioParam.linearRampToValueAtTime.args[0][0] === 0.4);
+      assert(audioParam.linearRampToValueAtTime.args[0][1] === 0.09999999999999998);
+      assert(audioParam.setValueAtTime.args[1][0] === 0.4);
+      assert(audioParam.setValueAtTime.args[1][1] === -0.6 + 0.5 + 0.2 + 1.0);
+      assert(audioParam.linearRampToValueAtTime.args[1][0] === 0);
+      assert(audioParam.linearRampToValueAtTime.args[1][1] === -0.6 + 0.5 + 0.2 + 1.0 + 0.4);
+    });
+    it("works with big negative playbackTime", function() {
+      var env1 = Envelope.adssr(0.5, 0.2, 0.4, 1.0, 0.4);
+      var audioParam = {
+        setValueAtTime: sinon.spy(),
+        linearRampToValueAtTime: sinon.spy(),
+      };
+      var env2 = env1.applyTo(audioParam, -5.0);
+
+      assert(env2 === env1);
+      assert(audioParam.setValueAtTime.callCount === 0);
+      assert(audioParam.linearRampToValueAtTime.callCount === 0);
+    });
+    it("works with empty envelope", function() {
+      var env1 = new Envelope([]);
+      var audioParam = {
+        setValueAtTime: sinon.spy(),
+        linearRampToValueAtTime: sinon.spy(),
+      };
+      var env2 = env1.applyTo(audioParam, 0);
+
+      assert(env2 === env1);
+      assert(audioParam.setValueAtTime.callCount === 0);
+      assert(audioParam.linearRampToValueAtTime.callCount === 0);
+    });
+  });
+  describe("#map(fn: function): Envelope", function() {
+    it("works", function() {
+      var env1 = Envelope.adssr(0.5, 0.2, 0.4, 1.0, 0.4);
+      var env2 = env1.map(function(items) {
+        return [ items[0] * 2, items[1] * 0.5 ];
+      });
+
+      assert(env2 instanceof Envelope);
+      assert(env2.duration === env1.duration * 2);
+      assert(env2.valueAt(0.0) === env1.valueAt(0.0) * 0.5);
+      assert(env2.valueAt(0.2) === env1.valueAt(0.1) * 0.5);
+      assert(env2.valueAt(0.4) === env1.valueAt(0.2) * 0.5);
+      assert(env2.valueAt(0.6) === env1.valueAt(0.3) * 0.5);
+      assert(env2.valueAt(0.8) === env1.valueAt(0.4) * 0.5);
+      assert(env2.valueAt(1.0) === env1.valueAt(0.5) * 0.5);
+      assert(env2.valueAt(1.2) === env1.valueAt(0.6) * 0.5);
+      assert(env2.valueAt(1.4) === env1.valueAt(0.7) * 0.5);
+      assert(env2.valueAt(1.6) === env1.valueAt(0.8) * 0.5);
+      assert(env2.valueAt(1.8) === env1.valueAt(0.9) * 0.5);
+      assert(env2.valueAt(2.0) === env1.valueAt(1.0) * 0.5);
+    });
+  });
+});
