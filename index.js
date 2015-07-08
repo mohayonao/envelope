@@ -33,15 +33,25 @@ function Envelope(params) {
   Object.defineProperty(this, "duration", { value: duration });
 }
 
-Envelope.adssr = function(attackTime, decayTime, sustainLevel, sustainTime, releaseTime) {
+Envelope.adssr = function(attackTime, decayTime, sustainLevel, sustainTime, releaseTime, totalLevel) {
+  totalLevel = defaults(totalLevel, 1);
+
   return new Envelope([
-    [ 0, 0 ], [ attackTime, 1 ], [ decayTime, sustainLevel ], [ sustainTime, sustainLevel ], [ releaseTime, 0 ],
+    [ 0, 0 ],
+    [ attackTime, totalLevel ],
+    [ decayTime, sustainLevel * totalLevel ],
+    [ sustainTime, sustainLevel * totalLevel ],
+    [ releaseTime, 0 ],
   ]);
 };
 
-Envelope.ads = function(attackTime, decayTime, sustainLevel) {
+Envelope.ads = function(attackTime, decayTime, sustainLevel, totalLevel) {
+  totalLevel = defaults(totalLevel, 1);
+
   return new Envelope([
-    [ 0, 0 ], [ attackTime, 1 ], [ decayTime, sustainLevel ],
+    [ 0, 0 ],
+    [ attackTime, totalLevel ],
+    [ decayTime, sustainLevel * totalLevel ],
   ]);
 };
 
@@ -123,6 +133,10 @@ Envelope.prototype.applyTo = function(audioParam, playbackTime) {
 Envelope.prototype.map = function(fn) {
   return new Envelope(this[PARAMS].map(fn));
 };
+
+function defaults(value, defalutValue) {
+  return typeof value !== "undefined" ? value : defalutValue;
+}
 
 function validate(params) {
   return Array.isArray(params) && params.every(function(items) {
