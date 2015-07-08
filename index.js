@@ -168,6 +168,15 @@ Envelope.prototype.map = function(fn) {
   return new Envelope(this[PARAMS].map(fn));
 };
 
+Envelope.prototype.madd = function(mul, add) {
+  mul = defaults(mul, 1);
+  add = defaults(add, 0);
+
+  return new Envelope(this[PARAMS].map(function(items) {
+    return [ items[TIME], items[VALUE] * mul + add ];
+  }));
+};
+
 function defaults(value, defalutValue) {
   return typeof value !== "undefined" ? value : defalutValue;
 }

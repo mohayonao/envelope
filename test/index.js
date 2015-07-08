@@ -258,4 +258,24 @@ describe("Envelope", function() {
       assert(env2.valueAt(2.0) === env1.valueAt(1.0) * 0.5);
     });
   });
+  describe("#madd(mul: number, add: number = 1): Envelope", function() {
+    it("works", function() {
+      var env1 = Envelope.adssr(0.5, 0.2, 0.4, 1.0, 0.4);
+      var env2 = env1.madd(0.25, 0.5);
+
+      assert(env2 instanceof Envelope);
+      assert(env2.duration === env1.duration);
+      assert(env2.valueAt(0.0) === env1.valueAt(0.0) * 0.25 + 0.5);
+      assert(env2.valueAt(0.1) === env1.valueAt(0.1) * 0.25 + 0.5);
+      assert(env2.valueAt(0.2) === env1.valueAt(0.2) * 0.25 + 0.5);
+      assert(env2.valueAt(0.3) === env1.valueAt(0.3) * 0.25 + 0.5);
+      assert(env2.valueAt(0.4) === env1.valueAt(0.4) * 0.25 + 0.5);
+      assert(env2.valueAt(0.5) === env1.valueAt(0.5) * 0.25 + 0.5);
+      assert(env2.valueAt(0.6) === env1.valueAt(0.6) * 0.25 + 0.5);
+      assert(env2.valueAt(0.7) === env1.valueAt(0.7) * 0.25 + 0.5);
+      assert(env2.valueAt(0.8) === env1.valueAt(0.8) * 0.25 + 0.5);
+      assert(env2.valueAt(0.9) === env1.valueAt(0.9) * 0.25 + 0.5);
+      assert(env2.valueAt(1.0) === env1.valueAt(1.0) * 0.25 + 0.5);
+    });
+  });
 });
