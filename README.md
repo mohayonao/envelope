@@ -15,7 +15,7 @@ npm install @mohayonao/envelope
 
 Browser
 
-- [envelope.js](https://github.com/mohayonao/envelope/blob/master/build/envelope.js)
+- [envelope.js](https://raw.githubusercontent.com/mohayonao/envelope/master/build/envelope.js)
 
 ## API
 ### Envelope
