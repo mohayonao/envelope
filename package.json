@@ -1,0 +1,19 @@
+{
+  "name": "@mohayonao/envelope",
+  "description": "simple envelope",
+  "version": "0.0.0",
+  "author": "mohayonao <mohayonao@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/mohayonao/envelope/issues"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "homepage": "https://github.com/mohayonao/envelope/",
+  "license": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mohayonao/envelope.git"
+  },
+  "scripts": {}
+}
