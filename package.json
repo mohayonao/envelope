@@ -8,6 +8,7 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "browserify": "^10.2.4",
     "eslint": "^0.24.0",
     "espower-loader": "^0.11.0",
     "intelli-espower-loader": "^0.7.0",
@@ -24,6 +25,7 @@
     "url": "https://github.com/mohayonao/envelope.git"
   },
   "scripts": {
+    "build": "browserify index.js --standalone Envelope -o build/envelope.js",
     "cover": "istanbul cover --report text --report html _mocha",
     "lint": "eslint index.js test",
     "prepublish": "npm run lint && npm run test",
