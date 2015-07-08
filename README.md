@@ -22,10 +22,10 @@ Browser
 - `constructor(params: [ time: number, value: number ][])`
 
 ### Class methods
-- `adssr(attackTime, decayTime, sustainLevel, sustainTime, releaseTime, [totalLevel]): Envelope`
-- `ads(attackTime, decayTime, sustainLevel, [totalLevel]): Envelope`
-- `asr(attackTime, sustainTime, releaseTime, [totalLevel]): Envelope`
-- `cutoff(releaseTime, totalLevel = 1): Envelope`
+- `adssr(attackTime, decayTime, sustainLevel, sustainTime, releaseTime, [ totalLevel = 1 ]): Envelope`
+- `ads(attackTime, decayTime, sustainLevel, [ totalLevel = 1 ]): Envelope`
+- `asr(attackTime, sustainTime, releaseTime, [ totalLevel = 1 ]): Envelope`
+- `cutoff(releaseTime, [ totalLevel = 1 ]): Envelope`
 
 ### Instance attribute
 - `params: [ number, number ][]`
@@ -35,6 +35,7 @@ Browser
 - `valueAt(time: number): number`
 - `applyTo(audioParam: AudioParam, playbackTime: number): self`
 - `map(fn: function): Envelope`
+- `madd(mul: number, add: number = 1): Envelope`
 
 ## License
 MIT
