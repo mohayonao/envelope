@@ -102,10 +102,17 @@ describe("Envelope", function() {
   });
   describe("#params: [ number, number ][]", function() {
     it("works", function() {
-      var params = [];
+      var params = [
+        [ 0, 0 ], [ 0.5, 0.5 ], [ 1.0, 0.5 ], [ 0.4, 0 ],
+      ];
       var env = new Envelope(params);
 
-      assert(env.params === params);
+      assert(env.params !== params);
+      assert.deepEqual(env.params, params);
+
+      env.params[0][0] += 1;
+
+      assert.deepEqual(env.params, params);
     });
   });
   describe("#duration: number", function() {

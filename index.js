@@ -28,9 +28,6 @@ function Envelope(params) {
   this[DURATION] = duration;
   this[PREV_SEARCH_INDEX] = 0;
   this[PREV_SEARCH_TIME] = 0;
-
-  Object.defineProperty(this, "params", { value: params });
-  Object.defineProperty(this, "duration", { value: duration });
 }
 
 Envelope.adssr = function(attackTime, decayTime, sustainLevel, sustainTime, releaseTime, totalLevel) {
@@ -74,6 +71,23 @@ Envelope.cutoff = function(releaseTime, totalLevel) {
     [ releaseTime, 0 ],
   ]);
 };
+
+Object.defineProperties(Envelope.prototype, {
+  params: {
+    get: function() {
+      return this[PARAMS].map(function(items) {
+        return items.slice();
+      });
+    },
+    configurable: true, enumerable: false,
+  },
+  duration: {
+    get: function() {
+      return this[DURATION];
+    },
+    configurable: true, enumerable: false,
+  },
+});
 
 Envelope.prototype.valueAt = function(time) {
   var params = this[COMPUTED_PARAMS];
