@@ -55,6 +55,17 @@ Envelope.ads = function(attackTime, decayTime, sustainLevel, totalLevel) {
   ]);
 };
 
+Envelope.asr = function(attackTime, sustainTime, releaseTime, totalLevel) {
+  totalLevel = defaults(totalLevel, 1);
+
+  return new Envelope([
+    [ 0, 0 ],
+    [ attackTime, totalLevel ],
+    [ sustainTime, totalLevel ],
+    [ releaseTime, 0 ],
+  ]);
+};
+
 Envelope.prototype.valueAt = function(time) {
   var params = this[COMPUTED_PARAMS];
   var fromIndex, index, x0, x1;
