@@ -1,7 +1,7 @@
 {
   "name": "@mohayonao/envelope",
   "description": "simple envelope",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "author": "mohayonao <mohayonao@gmail.com>",
   "bugs": {
     "url": "https://github.com/mohayonao/envelope/issues"
