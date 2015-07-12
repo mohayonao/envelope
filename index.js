@@ -2,7 +2,11 @@
 
 var TIME = 0;
 var VALUE = 1;
-var COMPUTED_TIME = 2;
+var CURVE = 2;
+var COMPUTED_TIME = 3;
+var LINEAR = 0;
+var EXPONENTIAL = 1;
+var ZERO = 1e-4;
 var PARAMS = typeof Symbol !== "undefined" ? Symbol("PARAMS") : "_@mohayonao/envelope:PARAMS";
 var COMPUTED_PARAMS = typeof Symbol !== "undefined" ? Symbol("COMPUTED_PARAMS") : "_@mohayonao/envelope:COMPUTED_PARAMS";
 var DURATION = typeof Symbol !== "undefined" ? Symbol("DURATION") : "_@mohayonao/envelope:DURATION";
@@ -20,10 +24,11 @@ function Envelope(params) {
   this[COMPUTED_PARAMS] = params.map(function(items) {
     var time = Math.max(0, items[TIME]);
     var value = items[VALUE];
+    var curve = Math.max(0, Math.min(items[CURVE]|0, 1));
 
     duration += time;
 
-    return [ time, value, duration ];
+    return [ time, value, curve, duration ];
   });
   this[DURATION] = duration;
   this[PREV_SEARCH_INDEX] = 0;
@@ -34,11 +39,12 @@ Envelope.adssr = function(attackTime, decayTime, sustainLevel, sustainTime, rele
   totalLevel = defaults(totalLevel, 1);
 
   return new Envelope([
-    [ 0, 0 ],
-    [ attackTime, totalLevel ],
-    [ decayTime, sustainLevel * totalLevel ],
-    [ sustainTime, sustainLevel * totalLevel ],
-    [ releaseTime, 0 ],
+    [ 0, 0, LINEAR ],
+    [ attackTime, totalLevel, LINEAR ],
+    [ decayTime, sustainLevel * totalLevel, EXPONENTIAL ],
+    [ sustainTime, sustainLevel * totalLevel, LINEAR ],
+    [ releaseTime, ZERO, EXPONENTIAL ],
+    [ 0, 0, LINEAR ],
   ]);
 };
 
@@ -46,9 +52,9 @@ Envelope.ads = function(attackTime, decayTime, sustainLevel, totalLevel) {
   totalLevel = defaults(totalLevel, 1);
 
   return new Envelope([
-    [ 0, 0 ],
-    [ attackTime, totalLevel ],
-    [ decayTime, sustainLevel * totalLevel ],
+    [ 0, 0, LINEAR ],
+    [ attackTime, totalLevel, LINEAR ],
+    [ decayTime, sustainLevel * totalLevel, EXPONENTIAL ],
   ]);
 };
 
@@ -56,10 +62,11 @@ Envelope.asr = function(attackTime, sustainTime, releaseTime, totalLevel) {
   totalLevel = defaults(totalLevel, 1);
 
   return new Envelope([
-    [ 0, 0 ],
-    [ attackTime, totalLevel ],
-    [ sustainTime, totalLevel ],
-    [ releaseTime, 0 ],
+    [ 0, 0, LINEAR ],
+    [ attackTime, totalLevel, LINEAR ],
+    [ sustainTime, totalLevel, LINEAR ],
+    [ releaseTime, ZERO, EXPONENTIAL ],
+    [ 0, 0, LINEAR ],
   ]);
 };
 
@@ -67,8 +74,8 @@ Envelope.cutoff = function(releaseTime, totalLevel) {
   totalLevel = defaults(totalLevel, 1);
 
   return new Envelope([
-    [ 0, totalLevel ],
-    [ releaseTime, 0 ],
+    [ 0, totalLevel, LINEAR ],
+    [ releaseTime, 0, LINEAR ],
   ]);
 };
 
@@ -118,13 +125,17 @@ Envelope.prototype.valueAt = function(time) {
   this[PREV_SEARCH_TIME] = time;
   this[PREV_SEARCH_INDEX] = index;
 
+  if (x1[CURVE] === EXPONENTIAL) {
+    return linexp(time, x0[COMPUTED_TIME], x1[COMPUTED_TIME], x0[VALUE], x1[VALUE]);
+  }
+
   return linlin(time, x0[COMPUTED_TIME], x1[COMPUTED_TIME], x0[VALUE], x1[VALUE]);
 };
 
 Envelope.prototype.applyTo = function(audioParam, playbackTime) {
   var params = this[COMPUTED_PARAMS];
   var i, imax;
-  var value, time, prevValue;
+  var value, time, prevValue, prevTime;
 
   if (params.length) {
     imax = params.length;
@@ -148,16 +159,26 @@ Envelope.prototype.applyTo = function(audioParam, playbackTime) {
       }
     }
 
+    prevTime = time;
+
     for (; i < imax; i++) {
       time = params[i][COMPUTED_TIME] + playbackTime;
 
       if (params[i][VALUE] === prevValue) {
         audioParam.setValueAtTime(params[i][VALUE], time);
       } else {
-        audioParam.linearRampToValueAtTime(params[i][VALUE], time);
+        if (time === prevTime) {
+          time += 0.0001;
+        }
+        if (params[i][CURVE] === EXPONENTIAL) {
+          audioParam.exponentialRampToValueAtTime(params[i][VALUE], time);
+        } else {
+          audioParam.linearRampToValueAtTime(params[i][VALUE], time);
+        }
       }
 
       prevValue = params[i][VALUE];
+      prevTime = time;
     }
   }
 
@@ -173,7 +194,7 @@ Envelope.prototype.madd = function(mul, add) {
   add = defaults(add, 0);
 
   return new Envelope(this[PARAMS].map(function(items) {
-    return [ items[TIME], items[VALUE] * mul + add ];
+    return [ items[TIME], items[VALUE] * mul + add, items[CURVE] ];
   }));
 };
 
@@ -205,6 +226,10 @@ function clipAt(list, index) {
 
 function linlin(value, inMin, inMax, outMin, outMax) {
   return (value - inMin) / (inMax - inMin) * (outMax - outMin) + outMin;
+}
+
+function linexp(value, inMin, inMax, outMin, outMax) {
+  return Math.pow(outMax / outMin, (value - inMin) / (inMax - inMin)) * outMin;
 }
 
 module.exports = Envelope;
