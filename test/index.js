@@ -80,6 +80,86 @@ describe("Envelope", function() {
       });
     });
   });
+  describe(".a(attackTime: number, totalLevel: number = 1)", function() {
+    it("works", function() {
+      var env = Envelope.a(0.5);
+
+      assert(env instanceof Envelope);
+      assert.deepEqual(env.params, [
+        [ 0, 0, 0 ], [ 0.5, 1, 0 ],
+      ]);
+    });
+    it("works with totalLevel", function() {
+      it("works", function() {
+        var env = Envelope.asr(0.5, 0.5);
+
+        assert(env instanceof Envelope);
+        assert.deepEqual(env.params, [
+          [ 0, 0, 0 ], [ 0.5, 0.5, 0 ],
+        ]);
+      });
+    });
+  });
+  describe(".dssr(decayTime: number, sustainLevel: number, sustainTime: number, releaseTime: number, totalLevel: number = 1)", function() {
+    it("works", function() {
+      var env = Envelope.dssr(0.2, 0.4, 1.0, 0.4);
+
+      assert(env instanceof Envelope);
+      assert.deepEqual(env.params, [
+        [ 0, 1, 0 ], [ 0.2, 0.4, 1 ], [ 1.0, 0.4, 0 ], [ 0.4, 1e-4, 1 ], [ 0, 0, 0 ],
+      ]);
+    });
+    it("works with totalLevel", function() {
+      it("works", function() {
+        var env = Envelope.dssr(0.2, 0.4, 1.0, 0.4, 0.5);
+
+        assert(env instanceof Envelope);
+        assert.deepEqual(env.params, [
+          [ 0, 0.5, 0 ], [ 0.2, 0.2, 1 ], [ 1.0, 0.2, 0 ], [ 0.4, 1e-4, 1 ], [ 0, 0, 0 ],
+        ]);
+      });
+    });
+  });
+  describe(".ds(decayTime: number, sustainLevel: number, totalLevel: number = 1)", function() {
+    it("works", function() {
+      var env = Envelope.ds(0.2, 0.4);
+
+      assert(env instanceof Envelope);
+      assert.deepEqual(env.params, [
+        [ 0, 1, 0 ], [ 0.2, 0.4, 1 ],
+      ]);
+    });
+    it("works with totalLevel", function() {
+      it("works", function() {
+        var env = Envelope.ds(0.2, 0.4, 0.5);
+
+        assert(env instanceof Envelope);
+        assert.deepEqual(env.params, [
+          [ 0, 0.5, 0 ], [ 0.2, 0.2, 1 ],
+        ]);
+      });
+    });
+  });
+  describe(".r(releaseTime: number, totalLevel: number = 1)", function() {
+    it("works", function() {
+      var env = Envelope.r(0.4);
+
+      assert(env instanceof Envelope);
+      assert.deepEqual(env.params, [
+        [ 0, 1, 0 ], [ 0.4, 1e-4, 1 ], [ 0, 0, 0 ],
+      ]);
+    });
+    it("works with totalLevel", function() {
+      it("works", function() {
+        var env = Envelope.r(0.4, 0.5);
+
+        assert(env instanceof Envelope);
+        assert.deepEqual(env.params, [
+          [ 0, 0.5, 0 ], [ 0.4, 1e-4, 1 ], [ 0, 0, 0 ],
+        ]);
+      });
+    });
+  });
   describe(".cutoff(releaseTime: number, totalLevel: number = 1)", function() {
     it("works", function() {
       var env = Envelope.cutoff(0.4);

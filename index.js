@@ -70,6 +70,46 @@ Envelope.asr = function(attackTime, sustainTime, releaseTime, totalLevel) {
   ]);
 };
 
+Envelope.a = function(attackTime, totalLevel) {
+  totalLevel = defaults(totalLevel, 1);
+
+  return new Envelope([
+    [ 0, 0, LINEAR ],
+    [ attackTime, totalLevel, LINEAR ],
+  ]);
+};
+
+Envelope.dssr = function(decayTime, sustainLevel, sustainTime, releaseTime, totalLevel) {
+  totalLevel = defaults(totalLevel, 1);
+
+  return new Envelope([
+    [ 0, totalLevel, LINEAR ],
+    [ decayTime, sustainLevel * totalLevel, EXPONENTIAL ],
+    [ sustainTime, sustainLevel * totalLevel, LINEAR ],
+    [ releaseTime, ZERO, EXPONENTIAL ],
+    [ 0, 0, LINEAR ],
+  ]);
+};
+
+Envelope.ds = function(decayTime, sustainLevel, totalLevel) {
+  totalLevel = defaults(totalLevel, 1);
+
+  return new Envelope([
+    [ 0, totalLevel, LINEAR ],
+    [ decayTime, sustainLevel * totalLevel, EXPONENTIAL ],
+  ]);
+};
+
+Envelope.r = function(releaseTime, totalLevel) {
+  totalLevel = defaults(totalLevel, 1);
+
+  return new Envelope([
+    [ 0, totalLevel, LINEAR ],
+    [ releaseTime, ZERO, EXPONENTIAL ],
+    [ 0, 0, LINEAR ],
+  ]);
+};
+
 Envelope.cutoff = function(releaseTime, totalLevel) {
   totalLevel = defaults(totalLevel, 1);
 
