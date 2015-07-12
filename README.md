@@ -19,16 +19,20 @@ Browser
 
 ## API
 ### Envelope
-- `constructor(params: [ time: number, value: number ][])`
+- `constructor(params: [ time: number, value: number, curve: number ][])`
 
 ### Class methods
 - `adssr(attackTime, decayTime, sustainLevel, sustainTime, releaseTime, [ totalLevel = 1 ]): Envelope`
 - `ads(attackTime, decayTime, sustainLevel, [ totalLevel = 1 ]): Envelope`
 - `asr(attackTime, sustainTime, releaseTime, [ totalLevel = 1 ]): Envelope`
+- `a(attackTime, [ totalLevel = 1 ]): Envelope`
+- `dssr(decayTime, sustainLevel, sustainTime, releaseTime, [ totalLevel = 1 ]): Envelope`
+- `ds(decayTime, sustainLevel, [ totalLevel = 1 ]): Envelope`
+- `r(releaseTime, [ totalLevel = 1 ]): Envelope`
 - `cutoff(releaseTime, [ totalLevel = 1 ]): Envelope`
 
 ### Instance attribute
-- `params: [ number, number ][]`
+- `params: [ number, number, number ][]`
 - `duration: number`
 
 ### Instance methods
