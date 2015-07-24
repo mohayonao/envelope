@@ -176,33 +176,16 @@ Envelope.prototype.valueAt = function(time) {
 Envelope.prototype.applyTo = function(audioParam, playbackTime) {
   var params = this[COMPUTED_PARAMS];
   var i, imax;
-  var value, time, prevValue, prevTime;
+  var time, prevValue, prevTime;
 
   if (params.length) {
     imax = params.length;
 
-    if (0 <= playbackTime) {
-      time = params[0][COMPUTED_TIME] + playbackTime;
-      audioParam.setValueAtTime(params[0][VALUE], time);
-      prevValue = params[0][VALUE];
-
-      i = 1;
-    } else {
-      for (i = 0; i < imax; i++) {
-        time = params[i][COMPUTED_TIME] + playbackTime;
-
-        if (0 <= time) {
-          value = this.valueAt(-playbackTime);
-          audioParam.setValueAtTime(value, 0);
-          prevValue = value;
-          break;
-        }
-      }
-    }
-
+    time = params[0][COMPUTED_TIME] + playbackTime;
+    prevValue = params[0][VALUE];
     prevTime = time;
 
-    for (; i < imax; i++) {
+    for (i = 1; i < imax; i++) {
       time = params[i][COMPUTED_TIME] + playbackTime;
 
       if (params[i][VALUE] === prevValue) {
@@ -211,6 +194,7 @@ Envelope.prototype.applyTo = function(audioParam, playbackTime) {
         if (time === prevTime) {
           time += 0.0001;
         }
+        audioParam.setValueAtTime(prevValue, prevTime);
         if (params[i][CURVE] === EXPONENTIAL) {
           audioParam.exponentialRampToValueAtTime(params[i][VALUE], time);
         } else {
