@@ -257,7 +257,7 @@ describe("Envelope", function() {
       var env2 = env1.applyTo(audioParam, 10);
 
       assert(env2 === env1);
-      assert(audioParam.setValueAtTime.callCount === 2);
+      assert(audioParam.setValueAtTime.callCount === 5);
       assert(audioParam.linearRampToValueAtTime.callCount === 2);
       assert(audioParam.exponentialRampToValueAtTime.callCount === 2);
       assert(audioParam.setValueAtTime.args[0][0] === 0);
@@ -266,50 +266,18 @@ describe("Envelope", function() {
       assert(audioParam.linearRampToValueAtTime.args[0][1] === 10 + 0.5);
       assert(audioParam.exponentialRampToValueAtTime.args[0][0] === 0.4);
       assert(audioParam.exponentialRampToValueAtTime.args[0][1] === 10 + 0.5 + 0.2);
-      assert(audioParam.setValueAtTime.args[1][0] === 0.4);
-      assert(audioParam.setValueAtTime.args[1][1] === 10 + 0.5 + 0.2 + 1.0);
+      assert(audioParam.setValueAtTime.args[1][0] === 1);
+      assert(audioParam.setValueAtTime.args[1][1] === 10 + 0.5);
+      assert(audioParam.setValueAtTime.args[2][0] === 0.4);
+      assert(audioParam.setValueAtTime.args[2][1] === 10 + 0.5 + 0.2 + 1.0);
+      assert(audioParam.setValueAtTime.args[3][0] === 0.4);
+      assert(audioParam.setValueAtTime.args[3][1] === 10 + 0.5 + 0.2 + 1.0);
       assert(audioParam.exponentialRampToValueAtTime.args[1][0] === 1e-4);
       assert(audioParam.exponentialRampToValueAtTime.args[1][1] === 10 + 0.5 + 0.2 + 1.0 + 0.4);
+      assert(audioParam.setValueAtTime.args[4][0] === 1e-4);
+      assert(audioParam.setValueAtTime.args[4][1] === 10 + 0.5 + 0.2 + 1.0 + 0.4);
       assert(audioParam.linearRampToValueAtTime.args[1][0] === 0);
       assert(audioParam.linearRampToValueAtTime.args[1][1] === 10 + 0.5 + 0.2 + 1.0 + 0.4 + 0.0001);
-    });
-    it("works with negative playbackTime", function() {
-      var env1 = Envelope.adssr(0.5, 0.2, 0.4, 1.0, 0.4);
-      var audioParam = {
-        setValueAtTime: sinon.spy(),
-        linearRampToValueAtTime: sinon.spy(),
-        exponentialRampToValueAtTime: sinon.spy(),
-      };
-      var env2 = env1.applyTo(audioParam, -0.6);
-
-      assert(env2 === env1);
-      assert(audioParam.setValueAtTime.callCount === 2);
-      assert(audioParam.linearRampToValueAtTime.callCount === 1);
-      assert(audioParam.exponentialRampToValueAtTime.callCount === 2);
-      assert(audioParam.setValueAtTime.args[0][0] === 0.6324555320336759);
-      assert(audioParam.setValueAtTime.args[0][1] === 0);
-      assert(audioParam.exponentialRampToValueAtTime.args[0][0] === 0.4);
-      assert(audioParam.exponentialRampToValueAtTime.args[0][1] === 0.10009999999999998);
-      assert(audioParam.setValueAtTime.args[1][0] === 0.4);
-      assert(audioParam.setValueAtTime.args[1][1] === -0.6 + 0.5 + 0.2 + 1.0);
-      assert(audioParam.exponentialRampToValueAtTime.args[1][0] === 1e-4);
-      assert(audioParam.exponentialRampToValueAtTime.args[1][1] === -0.6 + 0.5 + 0.2 + 1.0 + 0.4);
-      assert(audioParam.linearRampToValueAtTime.args[0][0] === 0);
-      assert(audioParam.linearRampToValueAtTime.args[0][1] === -0.6 + 0.5 + 0.2 + 1.0 + 0.4 + 0.0001);
-    });
-    it("works with big negative playbackTime", function() {
-      var env1 = Envelope.adssr(0.5, 0.2, 0.4, 1.0, 0.4);
-      var audioParam = {
-        setValueAtTime: sinon.spy(),
-        linearRampToValueAtTime: sinon.spy(),
-        exponentialRampToValueAtTime: sinon.spy(),
-      };
-      var env2 = env1.applyTo(audioParam, -5.0);
-
-      assert(env2 === env1);
-      assert(audioParam.setValueAtTime.callCount === 0);
-      assert(audioParam.linearRampToValueAtTime.callCount === 0);
-      assert(audioParam.exponentialRampToValueAtTime.callCount === 0);
     });
     it("works with empty envelope", function() {
       var env1 = new Envelope([]);
